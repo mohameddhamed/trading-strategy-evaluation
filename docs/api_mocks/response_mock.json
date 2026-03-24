@@ -1,9 +1,13 @@
 {
   "metrics": {
     "cumulativeReturn": 0.154,
-    "maxDrawdown": -0.052,
+    "annualizedReturn": 0.082,
+    "annualizedVolatility": 0.125,
     "sharpeRatio": 1.25,
-    "winRate": 0.55
+    "maxDrawdown": -0.052,
+    "winRate": 0.55,
+    "beta": 0.95,
+    "alpha": 0.02
   },
   "charts": {
     "strategy": [
