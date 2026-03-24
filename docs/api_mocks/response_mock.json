@@ -1,0 +1,42 @@
+{
+  "metrics": {
+    "cumulativeReturn": 0.154,
+    "maxDrawdown": -0.052,
+    "sharpeRatio": 1.25,
+    "winRate": 0.55
+  },
+  "charts": {
+    "strategy": [
+      { "time": "2023-01-01", "value": 10000.0 },
+      { "time": "2023-01-02", "value": 10150.5 },
+      { "time": "2023-01-03", "value": 10120.0 },
+      { "time": "2023-01-04", "value": 10300.25 }
+    ],
+    "benchmark": [
+      { "time": "2023-01-01", "value": 10000.0 },
+      { "time": "2023-01-02", "value": 10050.0 },
+      { "time": "2023-01-03", "value": 10010.0 },
+      { "time": "2023-01-04", "value": 10080.0 }
+    ]
+  },
+  "trades": [
+    {
+      "entryDate": "2023-01-10",
+      "exitDate": "2023-01-15",
+      "entryPrice": 390.5,
+      "exitPrice": 405.2,
+      "action": "long",
+      "symbol": "SPY",
+      "return": 0.037
+    },
+    {
+      "entryDate": "2023-02-01",
+      "exitDate": "2023-02-05",
+      "entryPrice": 410.0,
+      "exitPrice": 400.0,
+      "action": "short",
+      "symbol": "SPY",
+      "return": 0.024
+    }
+  ]
+}

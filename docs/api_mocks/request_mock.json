@@ -1,0 +1,8 @@
+{
+  "strategy": "MovingAverageCrossover",
+  "asset": "SPY",
+  "parameters": {
+    "short_window": 10,
+    "long_window": 50
+  }
+}
