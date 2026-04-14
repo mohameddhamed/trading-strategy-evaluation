@@ -7,5 +7,6 @@ services:
       - ./src:/workspace/src
       - ./data:/workspace/data
       - ./app:/workspace/app
+      - ./scripts:/workspace/scripts
     # Use uv run to execute the script within the container's virtual environment
-    command: uv run python src/engine/main.py
+    command: uv run python -m src.engine.main
