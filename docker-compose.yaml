@@ -1,0 +1,11 @@
+services:
+  backend:
+    build: .
+    container_name: trading_backend
+    volumes:
+      # Map local directories to the container's workspace
+      - ./src:/workspace/src
+      - ./data:/workspace/data
+      - ./app:/workspace/app
+    # Use uv run to execute the script within the container's virtual environment
+    command: uv run python src/engine/main.py
