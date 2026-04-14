@@ -1,5 +1,9 @@
 def main():
-    print("Hello World! The trading engine is successfully running inside Docker.")
+    """
+    Main entry point for the Trading Strategy Evaluation Engine.
+    FastAPI server and core engine execution will be initialized here.
+    """
+    print("Trading Engine initialized. Waiting for API implementation...")
 
 
 if __name__ == "__main__":
