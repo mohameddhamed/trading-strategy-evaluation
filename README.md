@@ -31,3 +31,11 @@ To test the quantitative logic and verify that the trading strategies (e.g., SMA
 docker-compose run backend uv run python -m scripts.demo_strategies
 ```
 This will generate a dummy dataset of 100 days, execute the algorithms, and print a pandas DataFrame showing the daily prices, strategy signals (+1, 0, -1), and daily returns.
+
+### API Documentation & Testing (Swagger UI)
+The engine runs a FastAPI backend server to communicate with the frontend UI.
+
+Once the Docker container is running (`docker-compose up`), you can access the automatically generated interactive API documentation by navigating to:
+**[http://localhost:8000/docs](http://localhost:8000/docs)**
+
+From this interface, you can explore the available endpoints, view the expected JSON schemas (like the `StrategyRequest` payload), and send live test requests directly to the engine.
