@@ -9,7 +9,7 @@ from src.strategies.classic import (
     MACDSignalCross, VolumeBreakout, BuyAndHold,
 )
 
-STRATEGY_REGISTRY: dict[str, type[BaseStrategy]] = {
+STRATEGY_MAP: dict[str, type[BaseStrategy]] = {
     "SMACrossover": SMACrossover,
     "RSIReversion": RSIReversion,
     "BollingerBands": BollingerBands,
@@ -89,14 +89,49 @@ def _build_equity_curve(returns: pd.Series, initial_value: float = 10_000.0) -> 
     ]
 
 
+def _extract_trades(df: pd.DataFrame, asset: str):
+    trades = []
+    sig = df["Signal"].dropna()
+    price = df["Close"]
+    prev_sig = 0
+    entry_date = entry_price = None
+
+    for date, s in sig.items():
+        s_int = int(s)
+        if s_int != prev_sig:
+            if prev_sig != 0 and entry_date is not None:
+                exit_price = float(price.loc[date])
+                ep = float(entry_price)
+                ret = (exit_price - ep) / ep * prev_sig
+                trades.append(
+                    {
+                        "entryDate": entry_date.strftime("%Y-%m-%d"),
+                        "exitDate": date.strftime("%Y-%m-%d"),
+                        "entryPrice": round(ep, 2),
+                        "exitPrice": round(exit_price, 2),
+                        "action": "long" if prev_sig == 1 else "short",
+                        "symbol": asset,
+                        "return": round(ret, 4),
+                        "days": (date - entry_date).days,
+                        "pnl": round((exit_price - ep) * prev_sig, 2),
+                    }
+                )
+            if s_int != 0:
+                entry_date = date
+                entry_price = price.loc[date]
+        prev_sig = s_int
+
+    return sorted(trades, key=lambda t: t["exitDate"], reverse=True)[:20]
+
+
 def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> dict[str, Any]:
-    if strategy_name not in STRATEGY_REGISTRY:
-        raise ValueError(f"Unknown strategy '{strategy_name}'. Available: {list(STRATEGY_REGISTRY)}")
+    if strategy_name not in STRATEGY_MAP:
+        raise ValueError(f"Unknown strategy '{strategy_name}'. Available: {list(STRATEGY_MAP)}")
 
     df = _load_csv(asset)
 
     # Run chosen strategy
-    strategy: BaseStrategy = STRATEGY_REGISTRY[strategy_name](**parameters)
+    strategy: BaseStrategy = STRATEGY_MAP[strategy_name](**parameters)
     result = strategy.execute(df)
     result["Strategy_Returns"] = _apply_transaction_costs(result)
 
@@ -115,4 +150,5 @@ def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> 
             "strategy": _build_equity_curve(result["Strategy_Returns"]),
             "benchmark": _build_equity_curve(benchmark_result["Strategy_Returns"]),
         },
+        "trades": _extract_trades(result["Strategy_Returns"], asset),
     }

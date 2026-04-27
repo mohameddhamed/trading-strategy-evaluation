@@ -18,7 +18,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ./frontend:/app
+      - ./app:/app
     working_dir: /app
     environment:
       - API_BASE=http://backend:8000
@@ -26,4 +26,4 @@ services:
       - backend
     command: >
       sh -c "pip install -q streamlit plotly pandas requests &&
-             streamlit run quant_dashboard.py --server.address 0.0.0.0"
+             streamlit run app.py --server.address 0.0.0.0"
