@@ -150,5 +150,5 @@ def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> 
             "strategy": _build_equity_curve(result["Strategy_Returns"]),
             "benchmark": _build_equity_curve(benchmark_result["Strategy_Returns"]),
         },
-        "trades": _extract_trades(result["Strategy_Returns"], asset),
+        "trades": _extract_trades(result, asset),
     }
