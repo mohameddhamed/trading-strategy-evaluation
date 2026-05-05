@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import Any, dict
 from src.strategies.base import BaseStrategy
 
 
@@ -8,6 +9,13 @@ class SMACrossover(BaseStrategy):
         super().__init__(name)
         self.short_window = short_window
         self.long_window = long_window
+
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {
+            "short_window": {"type": "int", "default": 10, "min": 1, "max": 100},
+            "long_window": {"type": "int", "default": 50, "min": 1, "max": 500},
+        }
 
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()
@@ -27,6 +35,14 @@ class RSIReversion(BaseStrategy):
         self.window = window
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {
+            "window": {"type": "int", "default": 14, "min": 1, "max": 50},
+            "lower_bound": {"type": "int", "default": 30, "min": 1, "max": 50},
+            "upper_bound": {"type": "int", "default": 70, "min": 50, "max": 99},
+        }
 
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()
@@ -56,6 +72,13 @@ class BollingerBands(BaseStrategy):
         self.window = window
         self.num_std = num_std
 
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {
+            "window": {"type": "int", "default": 20, "min": 1, "max": 100},
+            "num_std": {"type": "float", "default": 2.0, "min": 0.5, "max": 5.0},
+        }
+
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()
         sma = data["Close"].rolling(window=self.window).mean()
@@ -78,6 +101,14 @@ class MACDSignalCross(BaseStrategy):
         self.slow = slow
         self.signal = signal
 
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {
+            "fast": {"type": "int", "default": 12, "min": 1, "max": 50},
+            "slow": {"type": "int", "default": 26, "min": 1, "max": 100},
+            "signal": {"type": "int", "default": 9, "min": 1, "max": 50},
+        }
+
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()
 
@@ -99,6 +130,13 @@ class VolumeBreakout(BaseStrategy):
         super().__init__(name)
         self.volume_window = volume_window
         self.volume_multiplier = volume_multiplier
+
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {
+            "volume_window": {"type": "int", "default": 20, "min": 1, "max": 100},
+            "volume_multiplier": {"type": "float", "default": 1.5, "min": 0.5, "max": 5.0},
+        }
 
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()
@@ -123,6 +161,10 @@ class VolumeBreakout(BaseStrategy):
 class BuyAndHold(BaseStrategy):
     def __init__(self, name="Buy and Hold"):
         super().__init__(name)
+
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        return {}
 
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
         data = df.copy()

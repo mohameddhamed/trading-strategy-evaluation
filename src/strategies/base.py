@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from typing import dict, Any
 
 class BaseStrategy(ABC):
     """
@@ -8,6 +9,17 @@ class BaseStrategy(ABC):
 
     def __init__(self, name: str):
         self.name = name
+
+    @classmethod
+    def get_parameters(cls) -> dict[str, dict[str, Any]]:
+        """
+        Return parameter schema for this strategy.
+        Example: {
+            "short_window": {"type": "int", "default": 10, "min": 1, "max": 100},
+            "long_window": {"type": "int", "default": 50, "min": 1, "max": 500}
+        }
+        """
+        return {}
 
     @abstractmethod
     def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
