@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Any, dict
+from typing import Any
 from src.strategies.base import BaseStrategy
 
 

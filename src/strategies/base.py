@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-from typing import dict, Any
+from typing import Any
 
 class BaseStrategy(ABC):
     """

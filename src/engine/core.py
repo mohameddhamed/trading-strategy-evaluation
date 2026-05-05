@@ -42,12 +42,17 @@ def _download_market_data(
     if df.empty:
         raise ValueError(f"No data found for {asset} from {start_str} to {end_str}")
     
+    # Flatten MultiIndex columns if yfinance returns them (happens with certain tickers)
+    if isinstance(df.columns, pd.MultiIndex):
+        # Take the first level (the OHLCV names) and drop the ticker level
+        df.columns = df.columns.get_level_values(0)
+    
     # Normalize: ensure UTC timezone, reset to naive (no tz info)
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
     
-    # Ensure columns are lowercase for consistency
-    df.columns = df.columns.str.lower()
+    # Standardize column names to Title Case (Open, High, Low, Close, Volume, Adj Close)
+    df.columns = df.columns.str.title()
     df = df.sort_index()
     
     # Cache to CSV
@@ -71,6 +76,9 @@ def _load_csv(asset: str, start_date: str | datetime | None = None, end_date: st
     # Load existing CSV
     df = pd.read_csv(csv_path, parse_dates=["Date"], index_col="Date")
     df.sort_index(inplace=True)
+    
+    # Ensure column names are Title Case (for consistency with strategy code)
+    df.columns = df.columns.str.title()
     
     # If date range is specified, check if we have coverage or need to re-download
     if start_date is not None and end_date is not None:
