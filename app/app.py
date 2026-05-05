@@ -23,6 +23,7 @@ DARK_VARS = """
   --card-shadow:none;
   --grid-color:rgba(255,255,255,0.04);
   --input-text:#e8eaf0;
+  color-scheme:dark;
 """
 LIGHT_VARS = """
   --bg:#f4f6fa;--surface:#ffffff;--surface2:#eef0f5;
@@ -32,6 +33,7 @@ LIGHT_VARS = """
   --card-shadow:0 1px 4px rgba(0,0,0,0.07);
   --grid-color:rgba(0,0,0,0.05);
   --input-text:#0f1117;
+  color-scheme:light;
 """
 
 CSS_VARS = DARK_VARS if dark else LIGHT_VARS
@@ -75,6 +77,16 @@ section[data-testid="stSidebar"]{{display:none!important}}
 .error-box{{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:8px;padding:16px;color:var(--danger);font-family:'DM Mono',monospace;font-size:12px;white-space:pre-wrap}}
 [data-testid="stSlider"]>div>div>div{{background:var(--accent)!important}}[data-testid="stSlider"]>div>div{{background:var(--surface2)!important}}
 .stSelectbox>div>div,.stTextInput>div>div>input,.stNumberInput>div>div>input{{background:var(--surface2)!important;border:1px solid var(--border)!important;color:var(--input-text)!important;font-family:'DM Mono',monospace!important}}
+[data-testid="stDateInput"] input,[data-testid="stDateInput"]>div,[data-testid="stDateInput"]>div>div,.stDateInput>div,.stDateInput>div>div,.stDateInput>div>div>div,[data-baseweb="input"],[data-baseweb="base-input"]{{background:var(--surface2)!important;color:var(--input-text)!important;border-color:var(--border)!important;font-family:'DM Mono',monospace!important}}
+[data-testid="stNumberInputContainer"],[data-testid="stNumberInputContainer"]>div,[data-testid="stNumberInputContainer"] input{{background:var(--surface2)!important;color:var(--input-text)!important;border-color:var(--border)!important;font-family:'DM Mono',monospace!important}}
+[data-testid="stNumberInputContainer"] button{{background:var(--surface2)!important;color:var(--muted)!important;border-color:var(--border)!important}}
+[data-testid="stSelectbox"]>div>div,[data-testid="stSelectbox"] [data-baseweb="select"]>div{{background:var(--surface2)!important;color:var(--input-text)!important;border-color:var(--border)!important}}
+[data-baseweb="popover"] ul,[data-baseweb="menu"]{{background:var(--surface)!important;border:1px solid var(--border)!important}}
+[data-baseweb="popover"] li,[data-baseweb="menu"] li{{background:var(--surface)!important;color:var(--text)!important}}
+[data-baseweb="popover"] li:hover,[data-baseweb="menu"] li:hover{{background:var(--surface2)!important}}
+[data-baseweb="calendar"]{{background:var(--surface)!important;color:var(--text)!important}}
+[data-baseweb="calendar"] button{{background:transparent!important;color:var(--text)!important}}
+[data-baseweb="calendar"] button:hover{{background:var(--surface2)!important}}
 label[data-testid="stWidgetLabel"] p{{font-family:'DM Mono',monospace!important;font-size:9px!important;text-transform:uppercase!important;color:var(--muted)!important}}
 .stButton>button{{width:100%;background:var(--accent)!important;border:none!important;border-radius:8px!important;font-family:'Syne',sans-serif!important;font-size:13px!important;font-weight:800!important;color:#000!important;text-transform:uppercase!important;padding:12px 0!important}}
 .block-container{{padding:1.5rem 2rem 2rem!important;max-width:100%!important}}.stMarkdown p{{margin:0}}
