@@ -18,7 +18,7 @@ STRATEGY_MAP: dict[str, type[BaseStrategy]] = {
     "BuyAndHold": BuyAndHold,
 }
 
-DATA_DIR = Path("/app/data/processed")
+DATA_DIR = Path("./data/processed")
 TRANSACTION_COST = 0.001  # 0.1% per trade
 TRADING_DAYS_PER_YEAR = 252
 
@@ -129,6 +129,8 @@ def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> 
         raise ValueError(f"Unknown strategy '{strategy_name}'. Available: {list(STRATEGY_MAP)}")
 
     df = _load_csv(asset)
+
+    # TODO: add validation for invalid parameters -- return meaningful error
 
     # Run chosen strategy
     strategy: BaseStrategy = STRATEGY_MAP[strategy_name](**parameters)

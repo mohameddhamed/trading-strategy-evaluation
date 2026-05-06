@@ -67,6 +67,8 @@ def get_strategy_parameters(strategy_name: str):
 def run_strategy(request: StrategyRequest):
     try:
         result = run_backtest(request.strategy, request.asset, request.parameters)
+        # TODO measure execution
+        # TODO add execution in response header
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
