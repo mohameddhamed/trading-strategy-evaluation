@@ -226,10 +226,13 @@ def run_backtest(
     benchmark_result.dropna(subset=["Strategy_Returns", "Market_Returns"], inplace=True)
 
     kpis = _compute_kpis(result["Strategy_Returns"], result["Market_Returns"])
+    benchmark_kpis = _compute_kpis(benchmark_result["Strategy_Returns"], benchmark_result["Market_Returns"])
     
     # Calculate final portfolio value
     final_value = initial_capital * (1 + result["Strategy_Returns"]).prod()
     kpis["finalPortfolioValue"] = round(final_value, 2)
+    benchmark_final_value = initial_capital * (1 + benchmark_result["Strategy_Returns"]).prod()
+    benchmark_kpis["finalPortfolioValue"] = round(benchmark_final_value, 2)
 
     execution_time_ms = round((time.perf_counter() - _t0) * 1000, 1)
 
@@ -244,6 +247,7 @@ def run_backtest(
             "executionTimeMs": execution_time_ms,
         },
         "metrics": kpis,
+        "benchmarkMetrics": benchmark_kpis,
         "charts": {
             "strategy": _build_equity_curve(result["Strategy_Returns"], initial_capital),
             "benchmark": _build_equity_curve(benchmark_result["Strategy_Returns"], initial_capital),

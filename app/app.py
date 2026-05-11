@@ -399,6 +399,7 @@ st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 data = st.session_state.get("last_result")
 has_data = data is not None
 metrics = data["metrics"] if has_data else {}
+benchmark_metrics = data.get("benchmarkMetrics", {}) if has_data else {}
 charts = data["charts"] if has_data else {}
 trades = data["trades"] if has_data else []
 meta = st.session_state.get("last_meta", {})
@@ -466,6 +467,10 @@ if has_data:
             and ("Return" in key or "Drawdown" in key or "winRate" in key)
             else ""
         )
+        braw = benchmark_metrics.get(key)
+        if braw is not None and key != "finalPortfolioValue":
+            bval = fmt_metric_value(key, braw)
+            delta = f"Benchmark: <span style='color:var(--muted)'>{bval}</span>"
         col.markdown(
             f"""<div class="stat-card {cls}"><div class="stat-label">{fmt_metric_label(key)}</div><div class="stat-value {vc}">{val}</div><div class="stat-delta">{delta}</div></div>""",
             unsafe_allow_html=True,
@@ -599,14 +604,23 @@ with cr:
                 if (raw is not None and isinstance(raw, (int, float)) and raw >= 0)
                 else ("color:var(--danger)" if raw is not None else "color:var(--text)")
             )
+            bval = benchmark_metrics.get(key)
+            bformatted = fmt_metric_value(key, bval) if bval is not None else "—"
             trows += (
                 f"<tr style='border-bottom:1px solid var(--border)'>"
-                f"<td style='padding:9px 12px 9px 4px;font-family:'Geist','Segoe UI',sans-serif;font-size:10px;color:var(--muted)'>{label}</td>"
-                f"<td style='padding:9px 4px 9px 12px;font-family:'Geist','Segoe UI',sans-serif;font-size:11px;text-align:right;{color}'>{formatted}</td>"
+                f"<td style='padding:9px 4px 9px 4px;font-size:10px;color:var(--muted);width:40%'>{label}</td>"
+                f"<td style='padding:9px 8px;font-size:11px;text-align:right;{color}'>{formatted}</td>"
+                f"<td style='padding:9px 4px 9px 8px;font-size:11px;text-align:right;color:var(--muted)'>{bformatted}</td>"
                 f"</tr>"
             )
         st.markdown(
-            f"""<div class="card-body"><table style="width:100%;border-collapse:collapse"><tbody>{trows}</tbody></table></div>""",
+            f"""<div class="card-body"><table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="padding:0 4px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Metric</th>
+              <th style="padding:0 8px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);text-align:right;border-bottom:1px solid var(--border)">{ts}</th>
+              <th style="padding:0 4px 8px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:right;border-bottom:1px solid var(--border)">Benchmark</th>
+            </tr></thead>
+            <tbody>{trows}</tbody></table></div>""",
             unsafe_allow_html=True,
         )
     else:
