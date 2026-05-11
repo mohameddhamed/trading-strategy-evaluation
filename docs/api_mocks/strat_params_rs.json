@@ -1,0 +1,13 @@
+{
+    "strategy": "SMACrossover",
+    "parameters": {
+        "short_window": {
+            "type": "int",
+            "default": 10
+        },
+        "long_window": {
+            "type": "int",
+            "default": 50
+        }
+    }
+}

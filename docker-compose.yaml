@@ -11,3 +11,19 @@ services:
       - ./scripts:/workspace/scripts
     # <-- CHANGE THIS COMMAND TO RUN FASTAPI:
     command: uv run uvicorn src.engine.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    image: python:3.11-slim
+    container_name: trading_frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      - API_BASE=http://backend:8000
+    depends_on:
+      - backend
+    command: >
+      sh -c "pip install -q streamlit plotly pandas requests &&
+             streamlit run app.py --server.address 0.0.0.0"
