@@ -20,7 +20,7 @@ STRATEGY_MAP: dict[str, type[BaseStrategy]] = {
     "BuyAndHold": BuyAndHold,
 }
 
-DATA_DIR = Path("/app/data/processed")
+DATA_DIR = Path("./data/processed")
 TRANSACTION_COST = 0.001  # 0.1% per trade
 TRADING_DAYS_PER_YEAR = 252
 
@@ -207,6 +207,8 @@ def run_backtest(
         start_dt = pd.Timestamp(start_date) if start_date else df.index[0]
         end_dt = pd.Timestamp(end_date) if end_date else df.index[-1]
         df = df.loc[start_dt:end_dt]
+
+    # TODO: add validation for invalid parameters -- return meaningful error
 
     # Run chosen strategy
     strategy: BaseStrategy = STRATEGY_MAP[strategy_name](**parameters)
