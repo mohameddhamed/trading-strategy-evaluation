@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Any
+from datetime import datetime
+import yfinance as yf
 
 from src.strategies.base import BaseStrategy
 from src.strategies.classic import (
@@ -23,10 +25,72 @@ TRANSACTION_COST = 0.001  # 0.1% per trade
 TRADING_DAYS_PER_YEAR = 252
 
 
-def _load_csv(asset: str) -> pd.DataFrame:
-    path = DATA_DIR / f"{asset}.csv"
-    df = pd.read_csv(path, parse_dates=["Date"], index_col="Date")
+def _download_market_data(
+    asset: str, start_date: str | datetime, end_date: str | datetime
+) -> pd.DataFrame:
+    """
+    Download OHLCV data from yfinance and cache to CSV.
+    Returns DataFrame with index=Date, columns=[Open, High, Low, Close, Volume].
+    """
+    # Ensure dates are strings for yfinance
+    start_str = str(start_date)[:10] if not isinstance(start_date, str) else start_date
+    end_str = str(end_date)[:10] if not isinstance(end_date, str) else end_date
+    
+    # Download from Yahoo Finance
+    df = yf.download(asset, start=start_str, end=end_str, progress=False)
+    
+    if df.empty:
+        raise ValueError(f"No data found for {asset} from {start_str} to {end_str}")
+    
+    # Flatten MultiIndex columns if yfinance returns them (happens with certain tickers)
+    if isinstance(df.columns, pd.MultiIndex):
+        # Take the first level (the OHLCV names) and drop the ticker level
+        df.columns = df.columns.get_level_values(0)
+    
+    # Normalize: ensure UTC timezone, reset to naive (no tz info)
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+    
+    # Standardize column names to Title Case (Open, High, Low, Close, Volume, Adj Close)
+    df.columns = df.columns.str.title()
+    df = df.sort_index()
+    
+    # Cache to CSV
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    csv_path = DATA_DIR / f"{asset}.csv"
+    df.to_csv(csv_path, index=True, index_label="Date")
+    
+    return df
+
+
+def _load_csv(asset: str, start_date: str | datetime | None = None, end_date: str | datetime | None = None) -> pd.DataFrame:
+    """Load market data from cached CSV, or download if not available."""
+    csv_path = DATA_DIR / f"{asset}.csv"
+    
+    # If CSV doesn't exist or dates span beyond cached file, download fresh
+    if not csv_path.exists():
+        if start_date is None or end_date is None:
+            raise FileNotFoundError(f"No cached data for {asset}. Provide start_date and end_date to download.")
+        return _download_market_data(asset, start_date, end_date)
+    
+    # Load existing CSV
+    df = pd.read_csv(csv_path, parse_dates=["Date"], index_col="Date")
     df.sort_index(inplace=True)
+    
+    # Ensure column names are Title Case (for consistency with strategy code)
+    df.columns = df.columns.str.title()
+    
+    # If date range is specified, check if we have coverage or need to re-download
+    if start_date is not None and end_date is not None:
+        start_dt = pd.Timestamp(start_date)
+        end_dt = pd.Timestamp(end_date)
+        cached_start = df.index[0]
+        cached_end = df.index[-1]
+        
+        # Re-download if requested range extends beyond cache
+        if start_dt < cached_start or end_dt > cached_end:
+            return _download_market_data(asset, start_date, end_date)
+    
     return df
 
 
@@ -124,11 +188,25 @@ def _extract_trades(df: pd.DataFrame, asset: str):
     return sorted(trades, key=lambda t: t["exitDate"], reverse=True)[:20]
 
 
-def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> dict[str, Any]:
+def run_backtest(
+    strategy_name: str,
+    asset: str,
+    parameters: dict[str, Any],
+    start_date: str | datetime | None = None,
+    end_date: str | datetime | None = None,
+    initial_capital: float = 10_000.0,
+) -> dict[str, Any]:
     if strategy_name not in STRATEGY_MAP:
         raise ValueError(f"Unknown strategy '{strategy_name}'. Available: {list(STRATEGY_MAP)}")
 
-    df = _load_csv(asset)
+    # Load market data, downloading if necessary
+    df = _load_csv(asset, start_date, end_date)
+    
+    # Filter to requested date range if specified
+    if start_date is not None or end_date is not None:
+        start_dt = pd.Timestamp(start_date) if start_date else df.index[0]
+        end_dt = pd.Timestamp(end_date) if end_date else df.index[-1]
+        df = df.loc[start_dt:end_dt]
 
     # TODO: add validation for invalid parameters -- return meaningful error
 
@@ -145,12 +223,24 @@ def run_backtest(strategy_name: str, asset: str, parameters: dict[str, Any]) -> 
     benchmark_result.dropna(subset=["Strategy_Returns", "Market_Returns"], inplace=True)
 
     kpis = _compute_kpis(result["Strategy_Returns"], result["Market_Returns"])
+    
+    # Calculate final portfolio value
+    final_value = initial_capital * (1 + result["Strategy_Returns"]).prod()
+    kpis["finalPortfolioValue"] = round(final_value, 2)
 
     return {
+        "meta": {
+            "strategy": strategy_name,
+            "asset": asset,
+            "start_date": str(df.index[0].date()) if len(df) > 0 else str(start_date),
+            "end_date": str(df.index[-1].date()) if len(df) > 0 else str(end_date),
+            "data_source": "yfinance",
+            "initial_capital": initial_capital,
+        },
         "metrics": kpis,
         "charts": {
-            "strategy": _build_equity_curve(result["Strategy_Returns"]),
-            "benchmark": _build_equity_curve(benchmark_result["Strategy_Returns"]),
+            "strategy": _build_equity_curve(result["Strategy_Returns"], initial_capital),
+            "benchmark": _build_equity_curve(benchmark_result["Strategy_Returns"], initial_capital),
         },
         "trades": _extract_trades(result, asset),
     }

@@ -44,21 +44,7 @@ def get_strategy_parameters(strategy_name: str):
         raise HTTPException(status_code=404, detail=f"Strategy '{strategy_name}' not found")
     
     strategy_class = STRATEGY_MAP[strategy_name]
-    import inspect
-    sig = inspect.signature(strategy_class.__init__)
-    
-    params = {}
-    for param_name, param in sig.parameters.items():
-        if param_name in ("self", "name"):
-            continue
-        
-        default = param.default if param.default != inspect.Parameter.empty else None
-        param_type = "int" if isinstance(default, int) else "float" if isinstance(default, float) else "string"
-
-        params[param_name] = {
-            "type": param_type,
-            "default": default,
-        }
+    params = strategy_class.get_parameters()
     
     return {"strategy": strategy_name, "parameters": params}
 
@@ -66,11 +52,20 @@ def get_strategy_parameters(strategy_name: str):
 @app.post("/api/run")
 def run_strategy(request: StrategyRequest):
     try:
-        result = run_backtest(request.strategy, request.asset, request.parameters)
+        result = run_backtest(
+            request.strategy,
+            request.asset,
+            request.parameters,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            initial_capital=request.initial_capital,
+        )
         # TODO measure execution
         # TODO add execution in response header
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"No data file found for asset '{request.asset}'.")
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backtest error: {str(e)}")
